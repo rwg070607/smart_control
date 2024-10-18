@@ -1,1 +1,1 @@
-# smart_controll
+# smart_control
