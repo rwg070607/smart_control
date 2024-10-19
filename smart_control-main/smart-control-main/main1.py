@@ -24,6 +24,8 @@ main_fig = 8
 mouse_fig = 9
 # 화면 전체 사이즈
 screen_width, screen_height = pyautogui.size()
+#스크롤 속도
+scroll_speed = 0
 
 # 클릭 및 스크롤 상태 변수 
 scroll_timer = 0
@@ -72,7 +74,7 @@ def fig_text(frame, fig_idx, position):
 
 # 아이콘에 사용할 이미지 생성 함수
 def create_image():
-    image = Image.open("imgs/icon.png")
+    image = Image.open(r"C:\Users\삼성\Downloads\smart_control-main\smart_control-main\smart_control-main\smart-control-main\imgs\icon.png")
     return image
 
 # 프로그램을 종료하는 함수
@@ -95,6 +97,8 @@ def click(option):
 # main
 def background_task():
     # MediaPipe 손 객체 초기화
+    global scroll_timer
+    global scroll_speed
     mp_hands = mp.solutions.hands
     mp_drawing = mp.solutions.drawing_utils  # 손 랜드마크 그리기 도구
 
@@ -139,7 +143,7 @@ def background_task():
                     print(f"x: {fig_distance[4][0]}, y:{fig_distance[4][0]}, distance:{mt.sqrt(round(fig_distance[4][0], 1)**2 + round(fig_distance[4][1], 1)**2)}")
                 except:
                     pass
-                click(round(mt.sqrt(round(fig_distance[4][0], 1)**2 + round(fig_distance[4][1], 1)**2), 2) <= 0.1)
+                click([[round(mt.sqrt(round(fig_distance[4][0],1)**2+round(fig_distance[4][1],1)**2),2)<=0.1], [round(mt.sqrt(round(fig_distance[4][0],1)**2+round(fig_distance[4][1],1)**2),2)>=0.2]])
 
                 # 랜드마크 그리기
                 mp_drawing.draw_landmarks(image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
@@ -164,20 +168,38 @@ def background_task():
 
                 # 스크롤 기능
                 if left_eye_center[1] < image.shape[0] // 3:
+                    if scroll_timer < 0:
+                        scroll_timer = 0
+                        scroll_speed = 10
                     scroll_timer += 1
                 elif left_eye_center[1] > 2 * image.shape[0] // 3:
+                    if scroll_timer > 0:
+                        scroll_timer = 0
+                        scroll_speed = 10
                     scroll_timer -= 1
                 else:
                     scroll_timer = 0
 
                 if scroll_timer > scroll_threshold * 10:
-                    pyautogui.scroll(10)
+                    pyautogui.scroll(scroll_speed)
                     print("Scroll Up")
-                    scroll_timer = 0
+                    scroll_timer = 20
+                    if scroll_timer < 50:
+                        scroll_timer += 10
+                    elif scroll_timer > 50:
+                        scroll_timer = 50
+                    if scroll_speed < 60:
+                        scroll_speed += 20
                 elif scroll_timer < -scroll_threshold * 10:
-                    pyautogui.scroll(-10)
+                    pyautogui.scroll(-1 * scroll_speed)
                     print("Scroll Down")
-                    scroll_timer = 0
+                    scroll_timer = -20
+                    if scroll_timer > -50:
+                        scroll_timer -= 10
+                    elif scroll_timer < -50:
+                        scroll_timer = -50
+                    if scroll_speed > -60:
+                        scroll_speed += 20
 
         else:
             safety_mode = True  # 얼굴이 감지되지 않으면 안전 모드 활성화
