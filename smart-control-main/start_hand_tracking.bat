@@ -1,3 +1,0 @@
-@echo off
-echo Starting Hand Tracking Program...
-python main.py
